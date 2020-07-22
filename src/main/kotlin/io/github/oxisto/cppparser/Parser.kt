@@ -14,32 +14,32 @@ import org.antlr.v4.runtime.tree.ParseTree
 import java.nio.file.Path
 
 class Parser {
-  fun parse(path: Path): TranslationUnitDeclaration {
-    val inputStream = CharStreams.fromPath(path)
-    val lexer = CPP14Lexer(inputStream)
-    val tokenStream = CommonTokenStream(lexer)
-    val parser = CPP14Parser(tokenStream)
+    fun parse(path: Path): TranslationUnitDeclaration {
+        val inputStream = CharStreams.fromPath(path)
+        val lexer = CPP14Lexer(inputStream)
+        val tokenStream = CommonTokenStream(lexer)
+        val parser = CPP14Parser(tokenStream)
 
-    val ctx = parser.translationunit()
+        val ctx = parser.translationunit()
 
-    explore(ctx, 0)
+        explore(ctx, 0)
 
-    //val listener = TranslationUnitListener()
-    //ParseTreeWalker.DEFAULT.walk(listener, ctx)
-    return ctx.accept(Visitor()) as TranslationUnitDeclaration
+        //val listener = TranslationUnitListener()
+        //ParseTreeWalker.DEFAULT.walk(listener, ctx)
+        return ctx.accept(Visitor()) as TranslationUnitDeclaration
 
-    //return listener.tu
-  }
-
-  fun explore(node: ParseTree, indent: Int) {
-    println("%s%s -> %s".format(" ".repeat(indent), node.javaClass.simpleName, node.text))
-
-    if (node is ParserRuleContext) {
-      node.children?.let {
-        for (child in it) {
-          explore(child, indent + 2)
-        }
-      }
+        //return listener.tu
     }
-  }
+
+    fun explore(node: ParseTree, indent: Int) {
+        println("%s%s -> %s".format(" ".repeat(indent), node.javaClass.simpleName, node.text))
+
+        if (node is ParserRuleContext) {
+            node.children?.let {
+                for (child in it) {
+                    explore(child, indent + 2)
+                }
+            }
+        }
+    }
 }

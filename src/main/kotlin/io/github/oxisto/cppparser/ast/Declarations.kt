@@ -18,10 +18,30 @@ abstract class ValueDeclaration(var type: Type? = null) : NamedDeclaration() {
 
 }
 
+abstract class TypedDeclaration(name: DeclarationName) : NamedDeclaration(name) {
+
+    abstract fun toType(): Type?
+
+}
+
 class FunctionDeclaration() : ValueDeclaration() {
 
 }
 
 class VariableDeclaration() : ValueDeclaration() {
+
+}
+
+enum class ClassKey {
+    CLASS,
+    STRUCT,
+    UNION
+}
+
+class RecordDeclaration(name: DeclarationName, key: ClassKey = ClassKey.CLASS) : TypedDeclaration(name) {
+
+    override fun toType(): Type? {
+        return name?.identifier?.let { Type(it) }
+    }
 
 }

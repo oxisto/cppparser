@@ -16,4 +16,12 @@ class ParserTest {
     val tu = parser.parse(Paths.get("src", "test", "resources", "declarations.cpp"))
     assertNotNull(tu)
   }
+
+  @Test
+  fun testClass() {
+    val parser = Parser()
+
+    val tu = parser.parse(Paths.get("src", "test", "resources", "class.cpp"))
+    assertNotNull(tu)
+  }
 }
