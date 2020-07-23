@@ -40,20 +40,32 @@ class DeclarationsVisitor : CPP14BaseVisitor<List<Declaration>>() {
     override fun visitSimpledeclaration(ctx: CPP14Parser.SimpledeclarationContext): List<Declaration> {
         val list = mutableListOf<Declaration>()
 
-        val declaration = ctx.declspecifierseq().accept(DeclarationVisitor())
-        if (declaration != null) {
-            list.add(declaration)
+        // parse the declaration specifiers for the type
+        type = ctx.declspecifierseq().accept(TypeVisitor())
 
-            if (declaration is TypedDeclaration) {
-                type = declaration.toType()
-            }
-        } else {
-            // parse the declaration specifiers for the type
-            type = ctx.declspecifierseq().accept(TypeVisitor())
+        // check for additional declarations because of the type
+        if (type is RecordType) {
+            (type as RecordType).declaration?.let { list.add(it) }
         }
 
         // gather declarations from init declarator list
         ctx.initdeclaratorlist()?.accept(this)?.let { list.addAll(it) }
+
+        return list
+    }
+
+    override fun visitFunctiondefinition(ctx: CPP14Parser.FunctiondefinitionContext): List<Declaration> {
+        val list = mutableListOf<Declaration>()
+
+        type = ctx.declspecifierseq().accept(TypeVisitor())
+
+        ctx.declarator().accept(DeclarationVisitor(type)).let {
+            if (it is FunctionDeclaration) {
+                it.isDefinition = true
+            }
+
+            list.add(it)
+        }
 
         return list
     }
@@ -102,25 +114,10 @@ class DeclarationVisitor(
 
     override fun visitClasshead(ctx: CPP14Parser.ClassheadContext): RecordDeclaration {
         val name = ctx.classheadname().accept(NameVisitor())
-        val key: ClassKey = ClassKey.CLASS
+        var key: ClassKey = ClassKey.CLASS
 
         assert(ctx.classkey() != null)
-        ctx.classkey().accept(ClassKeyVisitor())
-
-        var record = RecordDeclaration(name, key)
-
-        return record
-    }
-
-    override fun visitElaboratedtypespecifier(ctx: CPP14Parser.ElaboratedtypespecifierContext): RecordDeclaration {
-        var name: DeclarationName = DeclarationName("")
-        val key: ClassKey = ClassKey.CLASS
-
-        if (ctx.Identifier() != null) {
-            name = ctx.Identifier().accept(NameVisitor())
-        }
-
-        ctx.classkey()?.let { it.accept(ClassKeyVisitor()) }
+        ctx.classkey().accept(ClassKeyVisitor())?.let { key = it }
 
         var record = RecordDeclaration(name, key)
 
@@ -184,5 +181,35 @@ class TypeVisitor : CPP14BaseVisitor<Type>() {
     override fun visitSimpletypespecifier(ctx: CPP14Parser.SimpletypespecifierContext): Type {
         // TODO: proper type parsing
         return Type(ctx.text.toString())
+    }
+
+    override fun visitClassspecifier(ctx: CPP14Parser.ClassspecifierContext): Type {
+        var declaration = ctx.accept(DeclarationVisitor())
+
+        var name = ctx.classhead().accept(NameVisitor())
+
+        // create new record type
+        var type = RecordType(name.identifier, declaration as RecordDeclaration)
+
+        return type
+    }
+
+
+    override fun visitElaboratedtypespecifier(ctx: CPP14Parser.ElaboratedtypespecifierContext): Type {
+        var name: DeclarationName = DeclarationName("")
+        var key: ClassKey = ClassKey.CLASS
+
+        if (ctx.Identifier() != null) {
+            name = ctx.Identifier().accept(NameVisitor())
+        }
+
+        ctx.classkey()?.accept(ClassKeyVisitor())?.let { key = it }
+
+        val declaration = RecordDeclaration(name, key)
+
+        // create new record type
+        val type = RecordType(name.identifier, declaration)
+
+        return type
     }
 }

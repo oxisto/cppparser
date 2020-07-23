@@ -24,7 +24,7 @@ abstract class TypedDeclaration(name: DeclarationName) : NamedDeclaration(name) 
 
 }
 
-class FunctionDeclaration() : ValueDeclaration() {
+class FunctionDeclaration(var isDefinition: Boolean = false) : ValueDeclaration() {
 
 }
 

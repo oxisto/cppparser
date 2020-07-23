@@ -1,9 +1,10 @@
 class A {
+
+} a;
+
+class B {
 public:
     int a;
 };
-
-class B {
-} b;
 
 class C;

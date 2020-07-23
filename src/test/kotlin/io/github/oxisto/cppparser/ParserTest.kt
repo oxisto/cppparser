@@ -3,25 +3,56 @@
  */
 package io.github.oxisto.cppparser
 
+import io.github.oxisto.cppparser.ast.*
 import java.nio.file.Paths
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ParserTest {
-  @Test
-  fun testParse() {
-    val parser = Parser()
+    @Test
+    fun testParse() {
+        val parser = Parser()
 
-    val tu = parser.parse(Paths.get("src", "test", "resources", "declarations.cpp"))
-    assertNotNull(tu)
-  }
+        val tu = parser.parse(Paths.get("src", "test", "resources", "declarations.cpp"))
+        assertNotNull(tu)
+    }
 
-  @Test
-  fun testClass() {
-    val parser = Parser()
+    @Test
+    fun testClass() {
+        val parser = Parser()
 
-    val tu = parser.parse(Paths.get("src", "test", "resources", "class.cpp"))
-    assertNotNull(tu)
-  }
+        val tu = parser.parse(Paths.get("src", "test", "resources", "class.cpp"))
+        assertNotNull(tu)
+
+        val a: VariableDeclaration? = tu.firstDeclaration("a")
+        assertNotNull(a)
+        assertDeclaredName("a", a)
+
+        val classA: RecordDeclaration? = tu.firstDeclaration("A")
+        assertNotNull(classA)
+        assertDeclaredName("A", classA)
+
+        val classB: RecordDeclaration? = tu.firstDeclaration("B")
+        assertNotNull(classB)
+        assertDeclaredName("B", classB)
+
+        val classC: RecordDeclaration? = tu.firstDeclaration("C")
+        assertNotNull(classC)
+        assertDeclaredName("C", classC)
+    }
+
+    @Test
+    fun testCompoundStatement() {
+        val parser = Parser()
+
+        val tu = parser.parse(Paths.get("src", "test", "resources", "compoundstmt.cpp"))
+        assertNotNull(tu)
+    }
+}
+
+
+fun assertDeclaredName(identifier: String, node: NamedDeclaration) {
+    assertEquals(DeclarationName(identifier), node.name)
 }
