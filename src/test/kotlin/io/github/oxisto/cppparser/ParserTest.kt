@@ -56,6 +56,18 @@ class ParserTest {
         val body = someFunction.body as CompoundStatement
         assertEquals(2, body.children.size)
     }
+
+    @Test
+    fun testTypes() {
+        val parser = Parser()
+
+        val tu = parser.parse(Paths.get("src", "test", "resources", "types.cpp"))
+        assertNotNull(tu)
+
+        val a = tu.firstDeclaration<VariableDeclaration>("a")
+        assertNotNull(a)
+        assertEquals(BuiltInType.Kind.UnsignedInt, (a.type as BuiltInType).kind)
+    }
 }
 
 

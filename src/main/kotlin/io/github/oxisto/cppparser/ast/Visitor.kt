@@ -2,7 +2,6 @@ package io.github.oxisto.cppparser.ast
 
 import io.github.oxisto.cppparser.ScopeManager
 import io.github.oxisto.cppparser.expectNotNull
-import io.github.oxisto.cppparser.expectTrue
 import io.github.oxisto.reticulated.grammar.CPP14BaseVisitor
 import io.github.oxisto.reticulated.grammar.CPP14Parser
 import org.antlr.v4.runtime.tree.TerminalNode
@@ -102,17 +101,11 @@ class DeclarationVisitor(
          */
         private val type: Type? = null) : CPP14BaseVisitor<Declaration>() {
 
-    override fun visitDeclarator(ctx: CPP14Parser.DeclaratorContext): Declaration {
-        return super.visitDeclarator(ctx)
-    }
-
     override fun visitNoptrdeclarator(ctx: CPP14Parser.NoptrdeclaratorContext): NamedDeclaration {
-        var declaration: NamedDeclaration
-
-        if (ctx.parametersandqualifiers() != null && ctx.noptrdeclarator() != null) {
-            declaration = ctx.noptrdeclarator().accept(ValueDeclarationVisitor(scope, FunctionDeclaration::class.java, type))
+        val declaration: NamedDeclaration = if (ctx.parametersandqualifiers() != null && ctx.noptrdeclarator() != null) {
+            ctx.noptrdeclarator().accept(ValueDeclarationVisitor(scope, FunctionDeclaration::class.java, type))
         } else {
-            declaration = ctx.accept(ValueDeclarationVisitor(scope, VariableDeclaration::class.java, type))
+            ctx.accept(ValueDeclarationVisitor(scope, VariableDeclaration::class.java, type))
         }
 
         // TODO: array
@@ -121,9 +114,7 @@ class DeclarationVisitor(
     }
 
     override fun visitClassspecifier(ctx: CPP14Parser.ClassspecifierContext): Declaration {
-        var record = ctx.classhead().accept(this) as RecordDeclaration
-
-        var name = ctx
+        val record = ctx.classhead().accept(this) as RecordDeclaration
 
         return record
     }
@@ -135,7 +126,7 @@ class DeclarationVisitor(
         expectNotNull(ctx.classkey(), "Expecting class key")
         ctx.classkey().accept(ClassKeyVisitor(scope))?.let { key = it }
 
-        var record = RecordDeclaration(name, key)
+        val record = RecordDeclaration(name, key)
 
         return record
     }
@@ -246,9 +237,61 @@ class NameVisitor(var scope: ScopeManager) : CPP14BaseVisitor<DeclarationName>()
 }
 
 class TypeVisitor(var scope: ScopeManager) : CPP14BaseVisitor<Type>() {
+
+    var type: Type? = null
+
+    override fun visitDeclspecifierseq(ctx: CPP14Parser.DeclspecifierseqContext): Type {
+        // start with the last node and work backwards
+        if (ctx?.declspecifierseq() != null) {
+            var type = ctx.declspecifierseq().accept(this)
+
+            // set as current type
+            this.type = type
+        }
+
+        var type = ctx.declspecifier().accept(this)
+
+        return type
+    }
+
     override fun visitSimpletypespecifier(ctx: CPP14Parser.SimpletypespecifierContext): Type {
+        when {
+            ctx.Char() != null -> return BuiltInType(BuiltInType.Kind.Char)
+            ctx.Char16() != null -> return BuiltInType(BuiltInType.Kind.Char16)
+            ctx.Char32() != null -> return BuiltInType(BuiltInType.Kind.Char32)
+            ctx.Wchar() != null -> return BuiltInType(BuiltInType.Kind.Wchar)
+            ctx.Bool() != null -> return BuiltInType(BuiltInType.Kind.Bool)
+            ctx.Short() != null -> return BuiltInType(BuiltInType.Kind.Short)
+            ctx.Int() != null -> return BuiltInType(BuiltInType.Kind.Int)
+            ctx.Long() != null -> return BuiltInType(BuiltInType.Kind.Long)
+            ctx.Float() != null -> return BuiltInType(BuiltInType.Kind.Float)
+            ctx.Double() != null -> return BuiltInType(BuiltInType.Kind.Double)
+            ctx.Void() != null -> return BuiltInType(BuiltInType.Kind.Void)
+            ctx.Auto() != null -> return BuiltInType(BuiltInType.Kind.Auto)
+            ctx.Unsigned() != null -> {
+                if (type is BuiltInType) {
+                    (type as BuiltInType).unsign()
+                    return type as BuiltInType
+                }
+            }
+            ctx.Signed() != null -> {
+                if (type is BuiltInType) {
+                    (type as BuiltInType).sign()
+                    return type as BuiltInType
+                }
+            }
+        }
+
+        // TODO: parse signed / unsigned
+
         // TODO: proper type parsing
-        return Type(ctx.text.toString())
+
+        var name = ctx.accept(NameVisitor(scope))
+
+        // TODO: proper type parsing
+        val type = Type(name.identifier)
+
+        return type
     }
 
     override fun visitClassspecifier(ctx: CPP14Parser.ClassspecifierContext): Type {
