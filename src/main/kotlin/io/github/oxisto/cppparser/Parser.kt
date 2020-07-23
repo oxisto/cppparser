@@ -24,9 +24,10 @@ class Parser {
 
         explore(ctx, 0)
 
+        val scope = ScopeManager()
         //val listener = TranslationUnitListener()
         //ParseTreeWalker.DEFAULT.walk(listener, ctx)
-        return ctx.accept(Visitor()) as TranslationUnitDeclaration
+        return ctx.accept(Visitor(scope)) as TranslationUnitDeclaration
 
         //return listener.tu
     }
@@ -41,5 +42,19 @@ class Parser {
                 }
             }
         }
+    }
+}
+
+class ParseException(message: String) : Exception(message) {}
+
+fun expectTrue(boolean: Boolean, message: String) {
+    if (boolean) {
+        throw ParseException(message)
+    }
+}
+
+fun expectNotNull(o: Any?, message: String) {
+    if (o == null) {
+        throw ParseException(message)
     }
 }

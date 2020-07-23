@@ -26,19 +26,19 @@ class ParserTest {
         val tu = parser.parse(Paths.get("src", "test", "resources", "class.cpp"))
         assertNotNull(tu)
 
-        val a: VariableDeclaration? = tu.firstDeclaration("a")
+        val a = tu.firstDeclaration<VariableDeclaration>("a")
         assertNotNull(a)
         assertDeclaredName("a", a)
 
-        val classA: RecordDeclaration? = tu.firstDeclaration("A")
+        val classA = tu.firstDeclaration<RecordDeclaration>("A")
         assertNotNull(classA)
         assertDeclaredName("A", classA)
 
-        val classB: RecordDeclaration? = tu.firstDeclaration("B")
+        val classB = tu.firstDeclaration<RecordDeclaration>("B")
         assertNotNull(classB)
         assertDeclaredName("B", classB)
 
-        val classC: RecordDeclaration? = tu.firstDeclaration("C")
+        val classC = tu.firstDeclaration<RecordDeclaration>("C")
         assertNotNull(classC)
         assertDeclaredName("C", classC)
     }
@@ -49,6 +49,12 @@ class ParserTest {
 
         val tu = parser.parse(Paths.get("src", "test", "resources", "compoundstmt.cpp"))
         assertNotNull(tu)
+
+        val someFunction = tu.firstDeclaration<FunctionDeclaration>("someFunction")
+        assertNotNull(someFunction)
+
+        val body = someFunction.body as CompoundStatement
+        assertEquals(2, body.children.size)
     }
 }
 

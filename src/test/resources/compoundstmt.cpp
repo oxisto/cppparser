@@ -1,5 +1,5 @@
-int someFunction(class A* a) {
-  int b;
+int someFunction(class A* a, class A* b) {
+  int c;
 
-  return b;
+  return c;
 }

@@ -1,7 +1,5 @@
 package io.github.oxisto.cppparser.ast
 
-import io.github.oxisto.reticulated.grammar.CPP14Parser
-
 abstract class Declaration : Node() {
 
 }
@@ -25,6 +23,12 @@ abstract class TypedDeclaration(name: DeclarationName) : NamedDeclaration(name) 
 }
 
 class FunctionDeclaration(var isDefinition: Boolean = false) : ValueDeclaration() {
+
+    var body: Statement? = null
+        set(value) {
+            value?.let { addChild(it) }
+            field = value
+        }
 
 }
 
