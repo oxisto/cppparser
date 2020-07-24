@@ -5,6 +5,8 @@ plugins {
   `java-library`
   `maven-publish`
   jacoco
+
+  id("org.sonarqube") version "3.0"
 }
 
 idea {
