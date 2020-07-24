@@ -4,6 +4,7 @@ plugins {
   idea
   `java-library`
   `maven-publish`
+  jacoco
 }
 
 idea {
@@ -11,6 +12,8 @@ idea {
     generatedSourceDirs.add(file("${project.buildDir}/generated-src/antlr/main"))
   }
 }
+
+group = "io.github.oxisto"
 
 repositories {
   mavenCentral()
@@ -39,6 +42,12 @@ dependencies {
 
   // Use the Kotlin JUnit integration.
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+}
+
+tasks.jacocoTestReport {
+  reports {
+    xml.isEnabled = true
+  }
 }
 
 val mavenCentralUri: String
