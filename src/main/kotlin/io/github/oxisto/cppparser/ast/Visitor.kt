@@ -2,8 +2,8 @@ package io.github.oxisto.cppparser.ast
 
 import io.github.oxisto.cppparser.ScopeManager
 import io.github.oxisto.cppparser.expectNotNull
-import io.github.oxisto.reticulated.grammar.CPP14BaseVisitor
-import io.github.oxisto.reticulated.grammar.CPP14Parser
+import io.github.oxisto.cppparser.grammar.CPP14BaseVisitor
+import io.github.oxisto.cppparser.grammar.CPP14Parser
 import org.antlr.v4.runtime.tree.TerminalNode
 
 class Visitor(var scope: ScopeManager) : CPP14BaseVisitor<Node>() {

@@ -5,8 +5,8 @@ package io.github.oxisto.cppparser
 
 import io.github.oxisto.cppparser.ast.TranslationUnitDeclaration
 import io.github.oxisto.cppparser.ast.Visitor
-import io.github.oxisto.reticulated.grammar.CPP14Lexer
-import io.github.oxisto.reticulated.grammar.CPP14Parser
+import io.github.oxisto.cppparser.grammar.CPP14Lexer
+import io.github.oxisto.cppparser.grammar.CPP14Parser
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.ParserRuleContext
