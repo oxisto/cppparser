@@ -1,5 +1,7 @@
 package io.github.oxisto.cppparser.ast
 
+import java.util.*
+
 class PointerUnion()
 
 interface Redeclarable<N : NamedDeclaration> : Iterable<N> {
@@ -8,18 +10,18 @@ interface Redeclarable<N : NamedDeclaration> : Iterable<N> {
   var latest: Redeclarable<N>?
 
   override fun iterator(): Iterator<N> {
-    return iterator(this)
+    return iterator(this.get())
   }
 
   fun get(): N {
     return this as N
   }
 
-  fun iterator(node: Redeclarable<N>): Iterator<N> {
-    class DeclarableIterator(node: Redeclarable<N>) : Iterator<N> {
+  fun iterator(node: N): Iterator<N> {
+    class DeclarableIterator(node: N) : Iterator<N> {
 
-      var current: Redeclarable<N> = node
-      val starter: Redeclarable<N> = node
+      var current: N = node
+      val starter: N = node
       var passedFirst: Boolean = false
 
       override fun hasNext(): Boolean {
@@ -30,15 +32,15 @@ interface Redeclarable<N : NamedDeclaration> : Iterable<N> {
           passedFirst = true
         }
 
-        val next = getNextDeclaration()
-        return next !== starter
+        val next = current.getNextRedeclaration()
+        return next !== current
       }
 
       override fun next(): N {
-        val next = current.getNextDeclaration()
-        current = next!!
+        val next = current.getNextRedeclaration()
+        current = next as N
 
-        return next.get()
+        return next
       }
     }
 
@@ -65,7 +67,7 @@ interface Redeclarable<N : NamedDeclaration> : Iterable<N> {
     // TODO: what about the others?!
   }
 
-  fun getNextDeclaration(): Redeclarable<N>? {
+  fun getPrevious(): Redeclarable<N>? {
     // we do not know the latest
     if (latest == null) {
       // if we know the previous, return it
@@ -80,6 +82,9 @@ interface Redeclarable<N : NamedDeclaration> : Iterable<N> {
 
 abstract class Declaration : Node() {
 
+  open fun getNextRedeclaration(): Declaration {
+    return this
+  }
 }
 
 class TranslationUnitDeclaration() : Declaration() {
@@ -114,8 +119,6 @@ class FunctionDeclaration(var isDefinition: Boolean = false) : ValueDeclaration(
       field = value
     }
 
-  var definition: FunctionDeclaration? = null
-
   val signature: String?
     get() {
       return name?.identifier + "(" +
@@ -123,6 +126,23 @@ class FunctionDeclaration(var isDefinition: Boolean = false) : ValueDeclaration(
           ")" +
           type?.name
     }
+
+  val definition: FunctionDeclaration?
+    get() {
+      for (declaration in this) {
+        if (declaration.isDefinition) {
+          return declaration
+        }
+      }
+
+      return null
+    }
+
+  override fun getNextRedeclaration(): FunctionDeclaration {
+    getPrevious()?.let { return it.get() }
+
+    return this
+  }
 
   override fun toString(): String {
     return "FunctionDeclaration(name=$name, parameters=$parameters)"

@@ -67,5 +67,4 @@ class ScopeManager {
     return types[qualifiedId]
   }
 
-
 }

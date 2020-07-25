@@ -85,9 +85,15 @@ class ParserTest {
     assertNotNull(tu)
     assertEquals(2, tu.children.size)
 
-    var definition = tu.children.first { it is FunctionDeclaration && it.name == DeclarationName("function") && it.isDefinition }
+    val definition = tu.children.map { it as FunctionDeclaration }.first { it.name == DeclarationName("function") && it.isDefinition }
+    assertNotNull(definition)
 
-    var declaration = tu.children.first { it is FunctionDeclaration && it.name == DeclarationName("function") && !it.isDefinition }
+    val declaration = tu.children.map { it as FunctionDeclaration }.first { it.name == DeclarationName("function") && !it.isDefinition }
+    assertNotNull(declaration)
+    assertEquals(definition, declaration.definition)
+
+    val declarations = declaration.iterator().asSequence().toList()
+    assertEquals(2, declarations.size)
   }
 
 
