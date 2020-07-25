@@ -75,8 +75,6 @@ class DeclarationsVisitor(var scope: ScopeManager) : CPP14BaseVisitor<MutableLis
       if (it is FunctionDeclaration) {
         it.isDefinition = true
 
-        scope.registerDeclaration(it)
-
         expectNotNull(ctx.functionbody(), "Expecting function body")
 
         val statement = ctx.functionbody().accept(StatementVisitor(scope))
@@ -263,7 +261,9 @@ class ValueDeclarationVisitor<N : ValueDeclaration>(var scope: ScopeManager, pri
     declaration.type = type
 
     // register declaration
-    scope.registerDeclaration(declaration)
+    if (declaration is Redeclarable<*>) {
+      scope.registerDeclaration(declaration as Redeclarable<N>)
+    }
 
     return declaration
   }

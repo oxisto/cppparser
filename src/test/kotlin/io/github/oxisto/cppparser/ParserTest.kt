@@ -93,25 +93,21 @@ class ParserTest {
 
   @Test
   fun RedeclarableTest() {
-    var f1 = FunctionDeclaration()
+    val f1 = FunctionDeclaration()
     f1.name = DeclarationName("f1")
     f1.setPreviousDeclaration(null)
 
-    var f2 = FunctionDeclaration()
+    val f2 = FunctionDeclaration()
     f2.name = DeclarationName("f2")
     f2.setPreviousDeclaration(f1)
 
-    var iterator = f1.iterator()
-    if(iterator.hasNext()) {
+    val iterator = f1.iterator()
+    if (iterator.hasNext()) {
       assertEquals(f2, iterator.next())
     }
 
-    if(iterator.hasNext()) {
+    if (iterator.hasNext()) {
       assertEquals(f1, iterator.next())
-    }
-
-    for(decl in f1) {
-      println(decl)
     }
   }
 

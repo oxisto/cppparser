@@ -2,19 +2,24 @@ package io.github.oxisto.cppparser.ast
 
 class PointerUnion()
 
-interface Redeclarable<N : Redeclarable<N>> : Iterable<N> {
+interface Redeclarable<N : NamedDeclaration> : Iterable<N> {
   var first: Redeclarable<N>?
   var prev: Redeclarable<N>?
   var latest: Redeclarable<N>?
 
   override fun iterator(): Iterator<N> {
-    return iterator(this as N)
+    return iterator(this)
   }
 
-  fun iterator(node: N): Iterator<N> {
-    class DeclarableIterator(node: N) : Iterator<N> {
-      lateinit var current: N
-      val starter: N = node
+  fun get(): N {
+    return this as N
+  }
+
+  fun iterator(node: Redeclarable<N>): Iterator<N> {
+    class DeclarableIterator(node: Redeclarable<N>) : Iterator<N> {
+
+      var current: Redeclarable<N> = node
+      val starter: Redeclarable<N> = node
       var passedFirst: Boolean = false
 
       override fun hasNext(): Boolean {
@@ -31,9 +36,9 @@ interface Redeclarable<N : Redeclarable<N>> : Iterable<N> {
 
       override fun next(): N {
         val next = current.getNextDeclaration()
-        current = next as N
+        current = next!!
 
-        return next
+        return next.get()
       }
     }
 
@@ -43,7 +48,7 @@ interface Redeclarable<N : Redeclarable<N>> : Iterable<N> {
   /**
    * Sets the previous declaration of this, if it exists. If it does not exist, this is probably the first.
    */
-  fun setPreviousDeclaration(previousDeclaration: N?) {
+  fun setPreviousDeclaration(previousDeclaration: Redeclarable<N>?) {
     if (previousDeclaration != null) {
       // learn first from previous
       first = previousDeclaration.first
@@ -58,10 +63,6 @@ interface Redeclarable<N : Redeclarable<N>> : Iterable<N> {
     first?.latest = this
 
     // TODO: what about the others?!
-  }
-
-  fun getFirstDeclaration(): Redeclarable<N>? {
-    return first
   }
 
   fun getNextDeclaration(): Redeclarable<N>? {

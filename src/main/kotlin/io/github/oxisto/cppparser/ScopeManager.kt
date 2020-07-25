@@ -23,25 +23,23 @@ class ScopeManager {
     return currentPrefix + unqualifiedId
   }
 
-  /*inline fun <reified N : NamedDeclaration> registerDeclaration(declaration: N): Boolean {
+  fun <N : NamedDeclaration> registerDeclaration(declaration: Redeclarable<N>): Boolean {
+    if (declaration !is NamedDeclaration) return false
+
     val name = declaration.name ?: return false
-    var previous = declarations.getOrDefault(name, null)
+    val previous = declarations.getOrDefault(name, null)
 
-    if (declaration is Redeclarable<*> && previous != null) {
-      (declaration as Redeclarable<N>).setPreviousDeclaration(previous)
+    if (previous != null) {
+      declaration.setPreviousDeclaration(previous as Redeclarable<N>)
+      logger.debug { "Re-declaring name '$name' of type ${declaration.nodeType}" }
     } else {
-      return false
-    }
-
-    logger.debug { "Registering name '$name' of type ${declaration.nodeType}" }
-
-    if (declaration is Redeclarable<*>) {
       declaration.setPreviousDeclaration(null)
+      logger.debug { "Declaring name '$name' of type ${declaration.nodeType}" }
     }
 
     declarations[name] = declaration
     return true
-  }*/
+  }
 
   inline fun <reified N : NamedDeclaration> getDeclaration(name: DeclarationName): N? {
     return declarations[name].takeIf { it is N } as N?
