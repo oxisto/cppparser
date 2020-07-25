@@ -11,66 +11,113 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ParserTest {
-    @Test
-    fun testParse() {
-        val parser = Parser()
+  @Test
+  fun testParse() {
+    val parser = Parser()
 
-        val tu = parser.parse(Paths.get("src", "test", "resources", "declarations.cpp"))
-        assertNotNull(tu)
+    val tu = parser.parse(Paths.get("src", "test", "resources", "declarations.cpp"))
+    assertNotNull(tu)
+  }
+
+  @Test
+  fun testClass() {
+    val parser = Parser()
+
+    val tu = parser.parse(Paths.get("src", "test", "resources", "class.cpp"))
+    assertNotNull(tu)
+
+    val a = tu.firstDeclaration<VariableDeclaration>("a")
+    assertNotNull(a)
+    assertDeclaredName("a", a)
+
+    val classA = tu.firstDeclaration<RecordDeclaration>("A")
+    assertNotNull(classA)
+    assertDeclaredName("A", classA)
+
+    val classB = tu.firstDeclaration<RecordDeclaration>("B")
+    assertNotNull(classB)
+    assertDeclaredName("B", classB)
+
+    val classC = tu.firstDeclaration<RecordDeclaration>("C")
+    assertNotNull(classC)
+    assertDeclaredName("C", classC)
+  }
+
+  @Test
+  fun testCompoundStatement() {
+    val parser = Parser()
+
+    val tu = parser.parse(Paths.get("src", "test", "resources", "compoundstmt.cpp"))
+    assertNotNull(tu)
+
+    val someFunction = tu.firstDeclaration<FunctionDeclaration>("someFunction")
+    assertNotNull(someFunction)
+
+    val body = someFunction.body as CompoundStatement
+    assertEquals(2, body.children.size)
+  }
+
+  @Test
+  fun testTypes() {
+    val parser = Parser()
+
+    val tu = parser.parse(Paths.get("src", "test", "resources", "types.cpp"))
+    assertNotNull(tu)
+
+    val a = tu.firstDeclaration<VariableDeclaration>("a")
+    assertNotNull(a)
+    assertEquals(BuiltInType.Kind.UnsignedInt, (a.type as BuiltInType).kind)
+  }
+
+  @Test
+  fun testForwardDeclarations() {
+    val parser = Parser()
+
+    val tu = parser.parse(Paths.get("src", "test", "resources", "forward-decl.cpp"))
+    assertNotNull(tu)
+  }
+
+  @Test
+  fun testFunction() {
+    val parser = Parser()
+
+    val tu = parser.parse(Paths.get("src", "test", "resources", "function.cpp"))
+    assertNotNull(tu)
+    assertEquals(2, tu.children.size)
+
+    var definition = tu.children.first { it is FunctionDeclaration && it.name == DeclarationName("function") && it.isDefinition }
+
+    var declaration = tu.children.first { it is FunctionDeclaration && it.name == DeclarationName("function") && !it.isDefinition }
+  }
+
+
+  @Test
+  fun RedeclarableTest() {
+    var f1 = FunctionDeclaration()
+    f1.name = DeclarationName("f1")
+    f1.setPreviousDeclaration(null)
+
+    var f2 = FunctionDeclaration()
+    f2.name = DeclarationName("f2")
+    f2.setPreviousDeclaration(f1)
+
+    var iterator = f1.iterator()
+    if(iterator.hasNext()) {
+      assertEquals(f2, iterator.next())
     }
 
-    @Test
-    fun testClass() {
-        val parser = Parser()
-
-        val tu = parser.parse(Paths.get("src", "test", "resources", "class.cpp"))
-        assertNotNull(tu)
-
-        val a = tu.firstDeclaration<VariableDeclaration>("a")
-        assertNotNull(a)
-        assertDeclaredName("a", a)
-
-        val classA = tu.firstDeclaration<RecordDeclaration>("A")
-        assertNotNull(classA)
-        assertDeclaredName("A", classA)
-
-        val classB = tu.firstDeclaration<RecordDeclaration>("B")
-        assertNotNull(classB)
-        assertDeclaredName("B", classB)
-
-        val classC = tu.firstDeclaration<RecordDeclaration>("C")
-        assertNotNull(classC)
-        assertDeclaredName("C", classC)
+    if(iterator.hasNext()) {
+      assertEquals(f1, iterator.next())
     }
 
-    @Test
-    fun testCompoundStatement() {
-        val parser = Parser()
-
-        val tu = parser.parse(Paths.get("src", "test", "resources", "compoundstmt.cpp"))
-        assertNotNull(tu)
-
-        val someFunction = tu.firstDeclaration<FunctionDeclaration>("someFunction")
-        assertNotNull(someFunction)
-
-        val body = someFunction.body as CompoundStatement
-        assertEquals(2, body.children.size)
+    for(decl in f1) {
+      println(decl)
     }
+  }
 
-    @Test
-    fun testTypes() {
-        val parser = Parser()
-
-        val tu = parser.parse(Paths.get("src", "test", "resources", "types.cpp"))
-        assertNotNull(tu)
-
-        val a = tu.firstDeclaration<VariableDeclaration>("a")
-        assertNotNull(a)
-        assertEquals(BuiltInType.Kind.UnsignedInt, (a.type as BuiltInType).kind)
-    }
 }
 
 
 fun assertDeclaredName(identifier: String, node: NamedDeclaration) {
-    assertEquals(DeclarationName(identifier), node.name)
+  assertEquals(DeclarationName(identifier), node.name)
 }

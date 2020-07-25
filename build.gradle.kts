@@ -33,6 +33,9 @@ tasks.getByName<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>("compileKotlin"
 dependencies {
   antlr("org.antlr:antlr4:4.8-1")
 
+  implementation("io.github.microutils:kotlin-logging:1.8.3")
+  implementation("org.slf4j:slf4j-simple:1.7.29")
+
   // Align versions of all Kotlin components
   implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
 
@@ -49,6 +52,12 @@ dependencies {
 tasks.jacocoTestReport {
   reports {
     xml.isEnabled = true
+  }
+}
+
+tasks {
+  test {
+    systemProperty("org.slf4j.simpleLogger.defaultLogLevel", "DEBUG")
   }
 }
 
@@ -95,6 +104,10 @@ publishing {
 
 tasks.withType<GenerateModuleMetadata> {
   enabled = false
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+  kotlinOptions.jvmTarget = "11"
 }
 
 /*signing {

@@ -1,18 +1,22 @@
 package io.github.oxisto.cppparser.ast
 
 class DeclarationName(var identifier: String) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
 
-        other as DeclarationName
+    other as DeclarationName
 
-        if (identifier != other.identifier) return false
+    if (identifier != other.identifier) return false
 
-        return true
-    }
+    return true
+  }
 
-    override fun hashCode(): Int {
-        return identifier.hashCode()
-    }
+  override fun hashCode(): Int {
+    return identifier.hashCode()
+  }
+
+  override fun toString(): String {
+    return identifier
+  }
 }
